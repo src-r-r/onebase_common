@@ -1,0 +1,22 @@
+# Logging configuration
+version: 1
+formatters:
+    brief:
+        format: '%(levelname)s %(message)s'
+    json:
+        format: '%(message)s'
+        '()': odi_common.log.formatters.JSONFormatter
+handlers:
+    console:
+        class: logging.StreamHandler
+        formatter: brief
+        args: (sys.stdout, )
+    json_console:
+        class: logging.StreamHandler
+        formatter: json
+        args: (sys.stdout, )
+loggers:
+    console:
+        level: INFO
+        handler: json_console
+disable_existing_loggers: false
