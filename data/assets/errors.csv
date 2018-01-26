@@ -1,3 +1,9 @@
 E-100,Invalid Size. Key {key} expects size {expected} but was given {given}
 E-200,Document set to READONLY (document={document})
-E-201,User does not have permission to perform the operation. (user={user})
+E-201,User does not have permission to perform the operation. (user={user}), (permissions={permissions})
+E-202,User with email {{email}} already has a 1Base Account.
+E-203,Path {path} not found.
+E-204,Node already exists at path. (path={path})
+E-205,Can't create path; it already exists (path={path})
+E-206,Path {path} already exists
+E-207,Node cannot be created at top-level.

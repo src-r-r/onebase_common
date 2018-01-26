@@ -18,6 +18,8 @@ along with 1Base.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
+import secrets
+import yaml
 
 # Common paths
 HOME = os.path.expanduser('~')
@@ -29,24 +31,31 @@ CONFIG_DIR = os.path.join(DATA_DIR, 'config')
 ERRORS_FILE = os.path.join(ASSETS_DIR, 'errors.csv')
 LOGGING_CONFIG = os.path.join(CONFIG_DIR, 'logging.yaml')
 
-DATABASES = {
-    '': {
-        'name': 'onebase',
-    },
-    'TEST': {
-        'dialect': 'mongodb',
-        'host': '127.0.0.1',
-        'port': 27017,
-    },
-    'PRODUCTION': {
-        # TODO
-        # 'dialect': 'mongodb',
-        # 'user': '',
-        # 'password': '',
-        # 'host': '',
-        # 'port': 0,
-    }
-}
+ONEBASE_DEV = 'development'
+ONEBASE_TEST = 'test'
+ONEBASE_PROD = 'production'
+ONEBASE_MODE_CHOICES = (ONEBASE_DEV, ONEBASE_TEST, ONEBASE_PROD)
+ONEBASE_MODE = os.environ.get('ONEBASE_MODE', ONEBASE_DEV)
+
+
+if ONEBASE_MODE == ONEBASE_DEV:
+    PUBLIC_DATA_DIR = os.path.join(HOME, '.share', 'onebase')
+else:
+    PUBLIC_DATA_DIR = os.path.join('/etc', 'onebase')
+
+CONFIG_FILE = os.path.join(PUBLIC_DATA_DIR, 'config.yaml')
+
+REQUIRED_FILES = (CONFIG_FILE, )
+
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR)
+
+if not os.path.exists(CONFIG_FILE):
+    raise RuntimeError('Could not find file {}'.format(CONFIG_FILE))
+
+# load the configuration from the YAML comfing
+with open(CONFIG_FILE, 'r') as config_file:
+    CONFIG = yaml.load(config_file.read())
 
 """ API Version
 """
@@ -69,12 +78,25 @@ RESPONSE_INFO = {
     'version': API_VERSION,
 }
 
+###
+# Crypto settings
+###
 
-def database(mode=os.environ.get('ONEBASE_MODE', '')):
-    if (len(DATABASES[mode].keys()) == 1) and ('name' in
-                                               DATABASES[mode].keys()):
-        return DATABASES[mode]['name']
+""" Secret token used for Flask sessions.
+"""
+FLASK_SECRET = secrets.token_urlsafe()
+
+
+def configure_database(db_config):
+    """ Configure the mongo database given the configuraton in the YAML
+    configuration file.
+    """
+    if (len(db_config.keys()) == 1) and ('name' in db_config.keys()):
+        return db_config['name']
     s = '{dialect}://{host}:{port}'
-    if ('user' in DATABASES[mode] and 'password' in DATABASES[mode]):
+    if ('user' in db_config and 'password' in db_config):
         s = '{dialect}://{user}:{password}@{host}:{port}'
-    return s.format(**DATABASES[mode])
+    return s.format(**db_config)
+
+
+DATABASE = configure_database(CONFIG['database'][CONFIG['mode']])

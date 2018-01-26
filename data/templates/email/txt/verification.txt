@@ -1,0 +1,13 @@
+Hello {{ user_email }},
+
+You are receiving this email because you registered an account on 1Base[1].
+If this is a mistake or you did not perform this action, please ignore this
+email.
+
+Otherwise, please click on the link below to verify your account
+
+    {{ verification_link }}[2]
+
+
+[1] https://{{ base_url }}/
+[2] {{ verification_link }}

@@ -2,3 +2,6 @@ save_document
 change_writability
 set_writability
 set_visibility
+create_types
+update_types
+delete_types
