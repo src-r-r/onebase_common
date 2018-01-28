@@ -16,9 +16,27 @@ You should have received a copy of the GNU General Public License
 along with 1Base.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import logging
+
 from urllib.parse import urlparse, urljoin
+from urllib import parse
 from flask import request, url_for
 import hashlib
+
+logger = logging.getLogger(__name__)
+
+class idict(dict):
+    """ Dict with (ordered) automatic iteration. """
+    def __iter__(self):
+        return ((i, self.get(i)) for i in sorted(self.keys()))
+
+    def append(self, item):
+        try:
+            i = max(sorted(self.keys()))
+        except Exception as e:
+            logger.error(e)
+            i = 0
+        self[i] = item
 
 def is_safe_url(target):
     """ Checks if `target` is a safe URL.
@@ -76,3 +94,25 @@ def path_is_parent(path, other, sep='/'):
         if p != other_parts[i]:
             return False
     return True
+
+
+def unparse_qs(q):
+    """ Revert query dict back to query string. """
+    return '&'.join(['{}={}'.format(k, ','.join(v)) for (k, v) in q.items()])
+
+
+def reconstruct_url(request, updated_args):
+    """ Extract the request, update the args, then repack the URL.
+
+    :param request: Flask request object.
+
+    :param updated args: Keys to update final URL
+
+    :return: Full URL modified with updated_args
+    """
+    parts = parse.urlsplit(request.url)
+    query = parse.parse_qs(parts.query)
+    query.update(updated_args)
+    parts_out = (parts.scheme, parts.netloc, parts.path,
+                 unparse_qs(query), parts.fragment)
+    return parse.urlunsplit(parts_out)

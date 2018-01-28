@@ -54,6 +54,7 @@ if not os.path.exists(CONFIG_FILE):
     raise RuntimeError('Could not find file {}'.format(CONFIG_FILE))
 
 # load the configuration from the YAML comfing
+CONFIG = {}
 with open(CONFIG_FILE, 'r') as config_file:
     CONFIG = yaml.load(config_file.read())
 
